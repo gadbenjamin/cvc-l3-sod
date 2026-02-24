@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Forest Coin Adventure</title>
+
+  <style>
+    body {
+      text-align: center;
+      background-color: #e8f5e9;
+      font-family: Arial, sans-serif;
+    }
+
+    canvas {
+      background-color: white;
+      border: 2px solid black;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Forest Coin Adventure</h2>
+  <p>Collect coins, avoid the enemy. Use arrow keys.</p>
+
+  <canvas id="gameCanvas" width="500" height="300"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // ===== GAME DATA =====
+    let score = 0;
+    let lives = 3;
+    let gameOver = false;
+
+    // Player
+    let player = {
+      x: 50,
+      y: 50,
+      size: 20,
+      color: "blue",
+      speed: 7
+    };
+
+    // Enemy
+    let enemy = {
+      x: 350,
+      y: 150,
+      size: 20,
+      color: "red",
+      speed: 0.3
+    };
+
+    // Coin
+    let coin = {
+      x: 200,
+      y: 100,
+      size: 10,
+      color: "gold"
+    };
+
+    // ===== DRAW FUNCTIONS =====
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.size, player.size);
+    }
+
+    function drawEnemy() {
+      ctx.fillStyle = enemy.color;
+      ctx.fillRect(enemy.x, enemy.y, enemy.size, enemy.size);
+    }
+
+    function drawCoin() {
+      ctx.fillStyle = coin.color;
+      ctx.beginPath();
+      ctx.arc(coin.x, coin.y, coin.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // ===== ENEMY MOVEMENT =====
+    function moveEnemy() {
+      if (enemy.x < player.x) enemy.x += enemy.speed;
+      if (enemy.x > player.x) enemy.x -= enemy.speed;
+      if (enemy.y < player.y) enemy.y += enemy.speed;
+      if (enemy.y > player.y) enemy.y -= enemy.speed;
+    }
+
+    // ===== COLLISION =====
+    function isColliding(a, b) {
+      return (
+        a.x < b.x + b.size &&
+        a.x + a.size > b.x &&
+        a.y < b.y + b.size &&
+        a.y + a.size > b.y
+      );
+    }
+
+    // ===== GAME LOOP =====
+    function gameLoop() {
+      if (gameOver) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawPlayer();
+      drawEnemy();
+      drawCoin();
+      moveEnemy();
+
+      // Coin collision
+      if (isColliding(player, coin)) {
+        score++;
+
+        // Every 3 coins = +1 life
+        if (score % 3 === 0) {
+          lives++;
+        }
+
+        coin.x = Math.random() * (canvas.width - 20) + 10;
+        coin.y = Math.random() * (canvas.height - 20) + 10;
+      }
+
+      // Enemy collision
+      if (isColliding(player, enemy)) {
+        if (lives > 1) {
+          lives--;
+          player.x = 50;
+          player.y = 50;
+        } else {
+          alert("Game Over! Final Score: " + score);
+          gameOver = true;
+        }
+      }
+
+      // Win condition
+      if (score >= 10) {
+        alert("YOU WIN! 🎉 Score: " + score);
+        gameOver = true;
+      }
+
+      // UI text
+      ctx.fillStyle = "black";
+      ctx.font = "16px Arial";
+      ctx.fillText("Score: " + score, 10, 20);
+      ctx.fillText("Lives: " + lives, 10, 40);
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // ===== CONTROLS =====
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "ArrowUp") player.y -= player.speed;
+      if (e.key === "ArrowDown") player.y += player.speed;
+      if (e.key === "ArrowLeft") player.x -= player.speed;
+      if (e.key === "ArrowRight") player.x += player.speed;
+    });
+
+    // Start game
+    gameLoop();
+  </script>
+
+</body>
+</html>
